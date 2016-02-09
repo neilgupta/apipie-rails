@@ -16,7 +16,7 @@ describe Apipie::ParamDescription do
 
     it "should return nil when no metadata is provided" do
       param = Apipie::ParamDescription.new(method_desc, :some_param, String)
-      param.to_json[:metadata].should == nil
+      expect(param.to_json[:metadata]).to eq(nil)
     end
 
     it "should return the metadata" do
@@ -25,7 +25,7 @@ describe Apipie::ParamDescription do
         :weight => '830g'
       }
       param = Apipie::ParamDescription.new(method_desc, :some_param, String, :meta => meta)
-      param.to_json[:metadata].should == meta
+      expect(param.to_json[:metadata]).to eq(meta)
     end
 
   end
@@ -34,15 +34,15 @@ describe Apipie::ParamDescription do
 
     it "should return true when show option is not provided" do
       param = Apipie::ParamDescription.new(method_desc, :some_param, String)
-      param.to_json[:show].should == true
+      expect(param.to_json[:show]).to eq(true)
     end
 
     it "should return the show option" do
       param = Apipie::ParamDescription.new(method_desc, :some_param, String, :show => true)
-      param.to_json[:show].should == true
+      expect(param.to_json[:show]).to eq(true)
 
       param = Apipie::ParamDescription.new(method_desc, :some_param, String, :show => false)
-      param.to_json[:show].should == false
+      expect(param.to_json[:show]).to eq(false)
     end
 
   end
@@ -52,7 +52,7 @@ describe Apipie::ParamDescription do
 
       it "should return name" do
         param = Apipie::ParamDescription.new(method_desc, :some_param, String)
-        param.to_json[:full_name].should == 'some_param'
+        expect(param.to_json[:full_name]).to eq('some_param')
       end
 
     end
@@ -63,7 +63,7 @@ describe Apipie::ParamDescription do
         parent_param = Apipie::ParamDescription.new(method_desc, :parent, String)
         nested_param = Apipie::ParamDescription.new(method_desc, :nested, String, :parent => parent_param)
 
-        nested_param.to_json[:full_name].should == 'parent[nested]'
+        expect(nested_param.to_json[:full_name]).to eq('parent[nested]')
       end
 
       context "with the parent parameter set to not show" do
@@ -72,10 +72,25 @@ describe Apipie::ParamDescription do
           parent_param = Apipie::ParamDescription.new(method_desc, :parent, String, :show => false)
           nested_param = Apipie::ParamDescription.new(method_desc, :nested, String, :parent => parent_param)
 
-          nested_param.to_json[:full_name].should == 'nested'
+          expect(nested_param.to_json[:full_name]).to eq('nested')
         end
 
       end
+    end
+  end
+
+  describe "manual validation text" do
+    it "should allow manual text" do
+      param = Apipie::ParamDescription.new(method_desc, :hidden_param, nil, :validations => "must be foo")
+
+      expect(param.validations).to include("\n<p>must be foo</p>\n")
+    end
+
+    it "should allow multiple items" do
+      param = Apipie::ParamDescription.new(method_desc, :hidden_param, nil, :validations => ["> 0", "< 5"])
+
+      expect(param.validations).to include("\n<p>&gt; 0</p>\n")
+      expect(param.validations).to include("\n<p>&lt; 5</p>\n")
     end
   end
 
@@ -83,17 +98,17 @@ describe Apipie::ParamDescription do
 
     it "should allow nil validator" do
       param = Apipie::ParamDescription.new(method_desc, :hidden_param, nil)
-      param.validator.should be_nil
+      expect(param.validator).to be_nil
     end
 
     it "should throw exception on unknown validator" do
-      proc { Apipie::ParamDescription.new(method_desc, :param, :unknown) }.should raise_error(RuntimeError, /Validator.*not found/)
+      expect { Apipie::ParamDescription.new(method_desc, :param, :unknown) }.to raise_error(RuntimeError, /Validator.*not found/)
     end
 
     it "should pick type validator" do
-      Apipie::Validator::BaseValidator.should_receive(:find).and_return(:validator_instance)
+      expect(Apipie::Validator::BaseValidator).to receive(:find).and_return(:validator_instance)
       param = Apipie::ParamDescription.new(method_desc, :param, String)
-      param.validator.should == :validator_instance
+      expect(param.validator).to eq(:validator_instance)
     end
 
   end
@@ -112,27 +127,27 @@ describe Apipie::ParamDescription do
 
     it "should replace string parameter name with colon prefix" do
       param = Apipie::ParamDescription.new(concern_method_desc, ":string_subst", String)
-      param.name.should == "string"
+      expect(param.name).to eq("string")
     end
 
     it "should replace symbol parameter name" do
       param = Apipie::ParamDescription.new(concern_method_desc, :concern, String)
-      param.name.should == :user
+      expect(param.name).to eq(:user)
     end
 
     it "should keep original value for strings without colon prefixes" do
       param = Apipie::ParamDescription.new(concern_method_desc, "string_subst", String)
-      param.name.should == "string_subst"
+      expect(param.name).to eq("string_subst")
     end
 
     it "should keep the original value when a string can't be replaced" do
       param = Apipie::ParamDescription.new(concern_method_desc, ":param", String)
-      param.name.should == ":param"
+      expect(param.name).to eq(":param")
     end
 
     it "should keep the original value when a symbol can't be replaced" do
       param = Apipie::ParamDescription.new(concern_method_desc, :param, String)
-      param.name.should == :param
+      expect(param.name).to eq(:param)
     end
   end
 
@@ -144,12 +159,12 @@ describe Apipie::ParamDescription do
 
       it "should set param as required by default" do
         param = Apipie::ParamDescription.new(method_desc, :required_by_default, String)
-        param.required.should be_true
+        expect(param.required).to be true
       end
 
       it "should be possible to set param as optional" do
         param = Apipie::ParamDescription.new(method_desc, :optional, String, :required => false)
-        param.required.should be_false
+        expect(param.required).to be false
       end
 
     end
@@ -160,16 +175,43 @@ describe Apipie::ParamDescription do
 
       it "should set param as optional by default" do
         param = Apipie::ParamDescription.new(method_desc, :optional_by_default, String)
-        param.required.should be_false
+        expect(param.required).to be false
       end
 
       it "should be possible to set param as required" do
         param = Apipie::ParamDescription.new(method_desc, :required, String, 'description','required' => true)
-        param.required.should be_true
+        expect(param.required).to be true
       end
 
     end
 
+  end
+
+  describe "required params on given actions" do
+    let(:method_desc) do
+      Apipie::MethodDescription.new(:create, resource_desc, dsl_data)
+    end
+
+    context "when the param is required for current action" do
+      it "should set param as required" do
+        param = Apipie::ParamDescription.new(method_desc, :required, String, 'description','required' => :create)
+        expect(param.required).to be true
+      end
+    end
+
+    context "when the param is required for multiple actions" do
+      it "should set param as required if it match current action" do
+        param = Apipie::ParamDescription.new(method_desc, :required, String, 'description','required' => [:update, :create])
+        expect(param.required).to be true
+      end
+    end
+
+    context "when the param is not required for current action" do
+      it "should set param as not required" do
+        param = Apipie::ParamDescription.new(method_desc, :required, String, 'description','required' => :update)
+        expect(param.required).to be false
+      end
+    end
   end
 
   describe "required params in action aware validator" do
@@ -191,13 +233,13 @@ describe Apipie::ParamDescription do
       end
 
       it "makes the param required" do
-        required.should include :name
-        required.should include :pass
+        expect(required).to include :name
+        expect(required).to include :pass
       end
 
       it "doesn't allow nil" do
-        allowed_nil.should_not include :name
-        allowed_nil.should_not include :pass
+        expect(allowed_nil).not_to include :name
+        expect(allowed_nil).not_to include :pass
       end
     end
 
@@ -208,17 +250,17 @@ describe Apipie::ParamDescription do
       end
 
       it "doesn't make the param required" do
-        required.should_not include :name
-        required.should_not include :pass
+        expect(required).not_to include :name
+        expect(required).not_to include :pass
       end
 
       it "doesn't allow nil" do
-        allowed_nil.should_not include :name
-        allowed_nil.should_not include :pass
+        expect(allowed_nil).not_to include :name
+        expect(allowed_nil).not_to include :pass
       end
 
       it "doesn't touch params with explicitly set allow_nil" do
-        allowed_nil.should_not include :membership
+        expect(allowed_nil).not_to include :membership
       end
     end
 
@@ -228,13 +270,13 @@ describe Apipie::ParamDescription do
       end
 
       it "makes the param required" do
-        required.should include :name
-        required.should include :pass
+        expect(required).to include :name
+        expect(required).to include :pass
       end
 
       it "doesn't allow nil" do
-        allowed_nil.should_not include :name
-        allowed_nil.should_not include :pass
+        expect(allowed_nil).not_to include :name
+        expect(allowed_nil).not_to include :pass
       end
     end
   end
@@ -252,10 +294,10 @@ describe Apipie::ParamDescription do
 
       it "should include the nested params in the json" do
         sub_params = subject.to_json[:params]
-        sub_params.size.should == 1
+        expect(sub_params.size).to eq(1)
         sub_param = sub_params.first
-        sub_param[:name].should == "answer"
-        sub_param[:full_name].should == "param[answer]"
+        expect(sub_param[:name]).to eq("answer")
+        expect(sub_param[:full_name]).to eq("param[answer]")
       end
 
     end
@@ -270,10 +312,10 @@ describe Apipie::ParamDescription do
 
       it "should include the nested params in the json" do
         sub_params = subject.to_json[:params]
-        sub_params.size.should == 1
+        expect(sub_params.size).to eq(1)
         sub_param = sub_params.first
-        sub_param[:name].should == "answer"
-        sub_param[:full_name].should == "param[answer]"
+        expect(sub_param[:name]).to eq("answer")
+        expect(sub_param[:full_name]).to eq("param[answer]")
       end
 
     end
@@ -285,7 +327,7 @@ describe Apipie::ParamDescription do
       end
 
       it "should include the nested params in the json" do
-        subject.to_json[:params].should be_nil
+        expect(subject.to_json[:params]).to be_nil
       end
 
     end
@@ -295,8 +337,8 @@ describe Apipie::ParamDescription do
   describe "Array with classes" do
     it "should be valid for objects included in class array" do
       param = Apipie::ParamDescription.new(method_desc, :param, [Fixnum, String])
-      expect { param.validate("1") }.should_not raise_error
-      expect { param.validate(Fixnum) }.should raise_error
+      expect { param.validate("1") }.not_to raise_error
+      expect { param.validate(Fixnum) }.to raise_error(Apipie::ParamInvalid)
     end
   end
 

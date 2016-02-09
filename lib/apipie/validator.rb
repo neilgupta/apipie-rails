@@ -129,7 +129,7 @@ module Apipie
       end
 
       def description
-        "Must match regular expression /#{@regexp.source}/."
+        "Must match regular expression <code>/#{@regexp.source}/</code>."
       end
     end
 
@@ -305,7 +305,7 @@ module Apipie
         if @hash_params
           @hash_params.each do |k, p|
             if Apipie.configuration.validate_presence?
-              raise ParamMissing.new(k) if p.required && !value.has_key?(k)
+              raise ParamMissing.new(p) if p.required && !value.has_key?(k)
             end
             if Apipie.configuration.validate_value?
               p.validate(value[k]) if value.has_key?(k)
@@ -398,11 +398,11 @@ module Apipie
     class BooleanValidator < BaseValidator
 
       def validate(value)
-        %w[true false].include?(value.to_s)
+        %w[true false 1 0].include?(value.to_s)
       end
 
       def self.build(param_description, argument, options, block)
-        if argument == :bool
+        if argument == :bool || argument == :boolean
           self.new(param_description)
         end
       end
@@ -412,7 +412,7 @@ module Apipie
       end
 
       def description
-        "Must be 'true' or 'false'"
+        "Must be 'true' or 'false' or '1' or '0'"
       end
     end
 

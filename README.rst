@@ -6,6 +6,12 @@
     :target: https://travis-ci.org/Apipie/apipie-rails
 .. image:: https://codeclimate.com/github/Apipie/apipie-rails.png
     :target: https://codeclimate.com/github/Apipie/apipie-rails
+.. image:: https://badges.gitter.im/Apipie/apipie-rails.svg
+   :alt: Join the chat at https://gitter.im/Apipie/apipie-rails
+   :target: https://gitter.im/Apipie/apipie-rails?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+.. image:: https://img.shields.io/gem/v/apipie-rails.svg
+   :alt: Latest release
+   :target: https://rubygems.org/gems/apipie-rails
 
 Apipie-rails is a DSL and Rails engine for documenting your RESTful
 API. Instead of traditional use of ``#comments``, Apipie lets you
@@ -27,11 +33,11 @@ Getting started
 
 The easiest way to get Apipie up and running with your app is:
 
-.. code::
+.. code:: sh
 
-   $ echo "gem 'apipie-rails'" >> Gemfile
-   $ bundle install
-   $ rails g apipie:install
+   echo "gem 'apipie-rails'" >> Gemfile
+   bundle install
+   rails g apipie:install
 
 Now you can start documenting your resources and actions (see
 `DSL Reference`_ for more info):
@@ -291,6 +297,10 @@ meta
 show
   Parameter is hidden from documentation when set to false (true by default)
 
+missing_message
+  Specify the message to be returned if the parameter is missing as a string or Proc.
+  Defaults to ``Missing parameter #{name}`` if not specified.
+
 Example:
 ~~~~~~~~
 
@@ -301,6 +311,7 @@ Example:
      param :password, String, :desc => "Password for login", :required => true
      param :membership, ["standard","premium"], :desc => "User membership"
      param :admin_override, String, :desc => "Not shown in documentation", :show => false
+     param :ip_address, String, :desc => "IP address", :required => true, :missing_message => lambda { I18n.t("ip_address.required") }
    end
    def create
      #...
@@ -509,7 +520,7 @@ doc_base_url
   Documentation frontend base url.
 
 api_base_url
-  Base url of your API, most probably /api.
+  Base url for default version of your API. To set it for specific version use ``config.api_base_url[version] = url``.
 
 default_version
   Default API version to be used (1.0 by default)
@@ -529,7 +540,7 @@ validate_value
 validate_presence
   Check the params presence against the documentation.
 
-validate_keys
+validate_key
   Check the received params to ensure they are defined in the API. (false by default)
 
 process_params
@@ -581,6 +592,9 @@ authenticate
   Pass a proc in order to authenticate user. Pass nil for
   no authentication (by default).
 
+authorize
+  Pass a proc in order to authorize controllers and methods. The Proc is evaluated in the controller context.
+
 show_all_examples
   Set this to true to set show_in_doc=1 in all recorded examples
 
@@ -628,6 +642,9 @@ Example:
         authenticate_or_request_with_http_basic do |username, password|
           username == "test" && password == "supersecretpassword"
        end
+     end
+     config.authorize = Proc.new do |controller, method, doc|
+       !method   # show all controller doc, but no method docs.
      end
    end
 
@@ -1099,7 +1116,7 @@ When you want to avoid any unnecessary computation in production mode,
 you can generate a cache with ``rake apipie:cache`` and configure the
 app to use it in production with ``config.use_cache = Rails.env.production?``
 
-Default cache dir is ``File.join(Rails.root, "public", "apipie-cache")``, 
+Default cache dir is ``File.join(Rails.root, "public", "apipie-cache")``,
 you can change it to where you want, example: ``config.cache_dir = File.join(Rails.root, "doc", "apidoc")``.
 
 If, for some complex cases, you need to generate/re-generate just part of the cache
