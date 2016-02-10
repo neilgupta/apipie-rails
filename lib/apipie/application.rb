@@ -39,10 +39,10 @@ module Apipie
 
       flatten_routes = []
 
-      route_set.routes.each do |route|
-        if route.app.respond_to?(:routes) && route.app.routes.is_a?(ActionDispatch::Routing::RouteSet)
+      route_set.routes.routes.each do |route|
+        if route.app.app.respond_to?(:routes) && route.app.app.routes.is_a?(ActionDispatch::Routing::RouteSet)
           # recursively go though the mounted engines
-          flatten_routes.concat(rails_routes(route.app.routes, File.join(base_url, route.path.spec.to_s)))
+          flatten_routes.concat(rails_routes(route.app.app.routes, File.join(base_url, route.path.spec.to_s)))
         else
           route.base_url = base_url
           flatten_routes << route
