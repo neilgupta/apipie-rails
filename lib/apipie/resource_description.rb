@@ -25,7 +25,7 @@ module Apipie
       @controller = controller
       @_id = resource_name
       @_version = version || Apipie.configuration.default_version
-      @_name = @_id.humanize
+      @_name = @_id.titleize
       @_parent = Apipie.get_resource_description(controller.superclass, version)
 
       update_from_dsl_data(dsl_data) if dsl_data
